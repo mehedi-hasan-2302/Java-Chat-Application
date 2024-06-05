@@ -13,12 +13,15 @@ public class Server {
 
         try {
             server = new ServerSocket(9000);
-            System.out.println("server is ready to accept connection...");
+            System.out.println("Server is ready to accept connection...");
             System.out.println("waiting...");
             socket = server.accept();
 
             br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream());
+
+            startReading();
+            startWriting();
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -30,21 +33,21 @@ public class Server {
             Runnable r1 = ()->{
 
                 System.out.println("Reader started...");
-                while(true){
 
-                    try {
+                try {
+                      while(true){
+
                         String msg = br.readLine();
                         if(msg.equals("exit")){
                             System.out.println("Client terminated the chat");
+                            socket.close();
                             break;
                         }
 
                         System.out.println("Client: " + msg);
-
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-
+                     }
+                } catch (Exception e) {
+                    System.out.println("Connection closed");
                 }
 
 
@@ -53,18 +56,31 @@ public class Server {
             new Thread(r1).start();
     }
 
+
     public void startWriting(){
 
         Runnable r2 = ()->{
 
-          try{
-              BufferedReader  br1 = new BufferedReader(new InputStreamReader(System.in));
-              String content = br1.readLine();
+            System.out.println("Writer started...");
 
-              out.println(content);
-              out.flush();
+          try{
+              while(!socket.isClosed()){
+                  BufferedReader  br1 = new BufferedReader(new InputStreamReader(System.in));
+                  String content = br1.readLine();
+
+                  out.println(content);
+                  out.flush();
+
+                  if(content.equals("exit")){
+                      socket.close();
+                      break;
+                  }
+
+              }
+
           }catch (Exception e){
-              e.printStackTrace();
+              //e.printStackTrace();
+              System.out.println("Connection closed");
           }
 
         };
