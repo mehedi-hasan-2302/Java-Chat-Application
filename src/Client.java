@@ -131,7 +131,8 @@ public class Client extends JFrame {
 
                         SwingUtilities.invokeLater(() -> {
                             JOptionPane.showMessageDialog(this, "Server terminated the chat");
-                            messageInput.setEnabled(false); // Disable input after showing the dialog
+                            messageInput.setEnabled(false);
+                            messageInput.setBackground(Color.LIGHT_GRAY);
                         });
                         socket.close();
                         break;
