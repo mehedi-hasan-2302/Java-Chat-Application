@@ -51,18 +51,25 @@ public class Server extends JFrame {
 
         heading.setFont(font);
         messageArea.setFont(font);
+        messageArea.setBackground(new Color(204, 229, 255)); // Light blue background color
+
         messageInput.setFont(font);
+        messageInput.setBackground(new Color(255, 204, 229)); // Light pink background color
+
+
 
 
         heading.setHorizontalAlignment(SwingConstants.CENTER);
         heading.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
-        messageInput.setHorizontalAlignment(SwingConstants.CENTER);
 
+        messageInput.setHorizontalAlignment(SwingConstants.CENTER);
+        messageArea.setEditable(false);
 
         this.setLayout(new BorderLayout());
 
         this.add(heading, BorderLayout.NORTH);
-        this.add(messageArea, BorderLayout.CENTER);
+        JScrollPane jScrollPane = new JScrollPane(messageArea);
+        this.add(jScrollPane, BorderLayout.CENTER);
         this.add(messageInput, BorderLayout.SOUTH);
 
 
@@ -72,34 +79,47 @@ public class Server extends JFrame {
     }
 
 
-    private void handleEvents(){
-        messageInput.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
+//    private void handleEvents(){
+//        messageInput.addKeyListener(new KeyListener() {
+//            @Override
+//            public void keyTyped(KeyEvent e) {
+//
+//            }
+//
+//            @Override
+//            public void keyPressed(KeyEvent e) {
+//
+//            }
+//
+//            @Override
+//            public void keyReleased(KeyEvent e) {
+//
+//                if(e.getKeyCode() == 10) {
+//
+//                    String contentToSend = messageInput.getText();
+//                    messageArea.append("Me: "+ contentToSend + "\n");
+//                    messageArea.setCaretPosition(messageArea.getDocument().getLength());
+//                    out.println(contentToSend);
+//                    out.flush();
+//                    messageInput.setText(" ");
+//                    messageInput.requestFocus();
+//                }
+//
+//            }
+//        });
+//    }
 
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-
-                if(e.getKeyCode() == 10) {
-
-                    String contentToSend = messageInput.getText();
-                    messageArea.append("Me: "+ contentToSend + "\n");
-                    out.println(contentToSend);
-                    out.flush();
-                    messageInput.setText(" ");
-                    messageInput.requestFocus();
-                }
-
-            }
+    private void handleEvents() {
+        messageInput.addActionListener(e -> {
+            String contentToSend = messageInput.getText();
+            messageArea.append("Me: " + contentToSend + "\n");
+            messageArea.setCaretPosition(messageArea.getDocument().getLength()); // Autoscroll
+            out.println(contentToSend);
+            out.flush();
+            messageInput.setText("");
         });
     }
+
 
     public void startReading()
     {
@@ -112,13 +132,17 @@ public class Server extends JFrame {
                 while(true){
 
                     String msg = br.readLine();
-                    if(msg.equals("exit")){
+                    if (msg.equals("exit")) {
                         System.out.println("Client terminated the chat");
-                        JOptionPane.showMessageDialog(this,"Client terminated the chat");
-                        messageInput.setEnabled(true);
+
+                        SwingUtilities.invokeLater(() -> {
+                            JOptionPane.showMessageDialog(this, "Client terminated the chat");
+                            messageInput.setEnabled(false); // Disable input after showing the dialog
+                        });
                         socket.close();
                         break;
                     }
+
 
                     // System.out.println("Server: " + msg);
 
